@@ -5,6 +5,13 @@ use quicli::prelude::*;
 use std::process::Command;
 use std::{thread, time};
 
+const ERROR_MESSAGE: &'static str =
+    "Couldn't run notify-send. Is it installed and on the system path?";
+const SHORTBREAK_MESSAGE: &'static str = "Break time!";
+const LONGBREAK_MESSAGE: &'static str = "Looooong Break time!";
+const WORK_MESSAGE: &'static str = "Work work!";
+const TITLE_MESSAGE: &'static str = "Pomo";
+
 #[derive(Debug, StructOpt)]
 struct Cli {
     #[structopt(long = "worktime", short = "w", default_value = "25")]
@@ -28,13 +35,9 @@ enum State {
 
 main!(|args: Cli, log_level: verbosity| {
     use State::*;
-    let shortbreak_text = "Break time!";
-    let longbreak_text = "Looooong Break time!";
-    let work_text = "Work work!";
-    let title = "Pomo";
-    let short_break = time::Duration::from_millis(1000 * 60 * args.shortbreak as u64);
-    let long_break = time::Duration::from_millis(1000 * 60 * args.longbreak as u64);
-    let work = time::Duration::from_millis(1000 * 60 * args.worktime as u64);
+    let short_break_duration = time::Duration::from_millis(1000 * 60 * args.shortbreak as u64);
+    let long_break_duration = time::Duration::from_millis(1000 * 60 * args.longbreak as u64);
+    let work_duration = time::Duration::from_millis(1000 * 60 * args.worktime as u64);
 
     let mut counter = 0;
     let mut state = Initial;
@@ -42,34 +45,34 @@ main!(|args: Cli, log_level: verbosity| {
     loop {
         if counter % 8 == 0 && state == Work {
             state = LongBreak;
-            thread::sleep(long_break);
+            thread::sleep(long_break_duration);
             info!("Taking a long break");
         } else if state == Work {
             state = ShortBreak;
-            thread::sleep(short_break);
+            thread::sleep(short_break_duration);
             info!("Taking a short break");
         } else {
             state = Work;
-            thread::sleep(work);
+            thread::sleep(work_duration);
             info!("Working");
         }
 
         let text = match state {
-            LongBreak => format!("{} {}", title, longbreak_text),
-            ShortBreak => format!("{} {}", title, shortbreak_text),
-            Work => format!("{} {}", title, work_text),
+            LongBreak => format!("{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
+            ShortBreak => format!("{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
+            Work => format!("{} {}", TITLE_MESSAGE, WORK_MESSAGE),
             Initial => unreachable!(),
         };
         if cfg!(target_os = "windows") {
             Command::new("cmd")
                 .args(&["/C", &format!("notify-send {}", text)])
                 .output()
-                .expect("Couldn't run notify-send");
+                .expect(ERROR_MESSAGE);
         } else {
             Command::new("sh")
                 .args(&["-c", &format!("notify-send.exe {}", text)])
                 .output()
-                .expect("Couldn't run notify-send");
+                .expect(ERROR_MESSAGE);
         }
 
         counter += 1;
