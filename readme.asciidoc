@@ -29,5 +29,7 @@ followed by `pomo` for default Pomodoro timings.
 == Arguments
 
 *--work, -w*: Set the time in minutes of the work sessions (defaults to 25)
+
 *--shortbreak, -s*: Set the time in minutes of the short breaks (defaults to 5)
+
 *--longbreak, -l*: Set the time in minutes of the long breaks (defaults to 20)
