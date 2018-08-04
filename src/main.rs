@@ -56,6 +56,7 @@ main!(|args: Cli, log_level: verbosity| {
             LongBreak => format!("{} {}", title, longbreak_text),
             ShortBreak => format!("{} {}", title, shortbreak_text),
             Work => format!("{} {}", title, work_text),
+            Initial => unreachable!()
         };
          if cfg!(target_os = "windows") {
              Command::new("cmd")
