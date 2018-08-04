@@ -43,12 +43,15 @@ main!(|args: Cli, log_level: verbosity| {
         if counter % 8 == 0 && state == Work {
             state = LongBreak;
             thread::sleep(long_break);
+            info!("Taking a long break");
         } else if state == Work {
             state = ShortBreak;
             thread::sleep(short_break);
+            info!("Taking a short break");
         } else {
             state = Work;
             thread::sleep(work);
+            info!("Working");
         }
 
         let text = match state {
