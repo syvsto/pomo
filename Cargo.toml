@@ -1,0 +1,7 @@
+[package]
+name = "pomo"
+version = "0.1.0"
+authors = ["Syver Storm-Furru <syver.storm.furru@gmail.com>"]
+
+[dependencies]
+quicli = "0.3"
