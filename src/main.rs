@@ -14,21 +14,42 @@ const TITLE_MESSAGE: &'static str = "Pomo";
 
 #[derive(Debug, StructOpt)]
 struct Cli {
-    #[structopt(long = "worktime", short = "w", default_value = "25")]
+    #[structopt(
+        long = "worktime",
+        short = "w",
+        default_value = "25",
+        help = "Length of each work session in minutes"
+    )]
     worktime: usize,
-    #[structopt(long = "shortbreak", short = "s", default_value = "5")]
+    #[structopt(
+        long = "shortbreak",
+        short = "s",
+        default_value = "5",
+        help = "Length of each short break in minutes"
+    )]
     shortbreak: usize,
-    #[structopt(long = "longbreak", short = "l", default_value = "20")]
+    #[structopt(
+        long = "longbreak",
+        short = "l",
+        default_value = "20",
+        help = "Length of each long break in minutes"
+    )]
     longbreak: usize,
-
+    #[structopt(
+        long = "numbreaks",
+        short = "n",
+        default_value = "4",
+        help = "The number of short breaks before a long one. Set to 0 to disable long breaks"
+    )]
+    number_of_short_breaks: usize,
     #[structopt(flatten)]
     verbosity: Verbosity,
 }
 
 #[derive(Debug, PartialEq)]
 enum State {
-    LongBreak,
     ShortBreak,
+    LongBreak,
     Work,
     Initial,
 }
@@ -39,6 +60,11 @@ main!(|args: Cli, log_level: verbosity| {
     let long_break_duration = time::Duration::from_millis(1000 * 60 * args.longbreak as u64);
     let work_duration = time::Duration::from_millis(1000 * 60 * args.worktime as u64);
 
+    let using_long_breaks = if args.number_of_short_breaks != 0 {
+        Some(args.number_of_short_breaks)
+    } else {
+        None
+    };
     let mut counter = 0;
     let mut state = Initial;
 
@@ -46,7 +72,8 @@ main!(|args: Cli, log_level: verbosity| {
             work_duration.as_secs() / 60, short_break_duration.as_secs() / 60, long_break_duration.as_secs() / 60);
 
     loop {
-        if counter % 8 == 0 && state == Work {
+        if using_long_breaks.is_some() && counter % using_long_breaks.unwrap() == 0 && state == Work
+        {
             state = LongBreak;
             thread::sleep(long_break_duration);
             info!("Taking a long break");
@@ -60,7 +87,7 @@ main!(|args: Cli, log_level: verbosity| {
             info!("Working");
         }
 
-        let text = match state {
+        let text = match &state {
             LongBreak => format!("{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
             ShortBreak => format!("{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
             Work => format!("{} {}", TITLE_MESSAGE, WORK_MESSAGE),
