@@ -42,6 +42,9 @@ main!(|args: Cli, log_level: verbosity| {
     let mut counter = 0;
     let mut state = Initial;
 
+    println!("The clock is ticking! Using the following settings:\nWork time: {}s\nShort breaks: {}s\nLong breaks: {}s\n",
+            work_duration.as_secs(), short_break_duration.as_secs(), long_break_duration.as_secs());
+
     loop {
         if counter % 8 == 0 && state == Work {
             state = LongBreak;
