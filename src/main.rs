@@ -69,6 +69,11 @@ impl fmt::Display for State {
 
 main!(|args: Cli, log_level: verbosity| {
     use State::*;
+
+	assert!(args.shortbreak != 0, "Can't set short breaks to 0 minutes");
+	assert!(args.longbreak != 0, "Can't set long breaks to 0 minutes");
+	assert!(args.worktime != 0, "Can't set work to 0 minutes");
+    
     let short_break_duration = time::Duration::from_millis(1000 * 60 * args.shortbreak as u64);
     let long_break_duration = time::Duration::from_millis(1000 * 60 * args.longbreak as u64);
     let work_duration = time::Duration::from_millis(1000 * 60 * args.worktime as u64);
