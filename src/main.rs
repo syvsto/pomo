@@ -3,7 +3,7 @@ extern crate quicli;
 
 use quicli::prelude::*;
 use std::process::Command;
-use std::{thread, time};
+use std::{thread, time, fmt};
 
 const ERROR_MESSAGE: &'static str =
     "Couldn't run notify-send. Is it installed and on the system path?";
@@ -55,6 +55,18 @@ enum State {
     Initial,
 }
 
+impl fmt::Display for State {
+   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+       use State::*;
+       match self {
+		ShortBreak => write!(f, "{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
+		LongBreak => write!(f, "{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
+		Work => write!(f, "{} {}", TITLE_MESSAGE, WORK_MESSAGE),
+		Initial => write!(f, "{} {}", TITLE_MESSAGE, STARTUP_MESSAGE),
+       }
+   }
+}
+
 main!(|args: Cli, log_level: verbosity| {
     use State::*;
     let short_break_duration = time::Duration::from_millis(1000 * 60 * args.shortbreak as u64);
@@ -62,7 +74,7 @@ main!(|args: Cli, log_level: verbosity| {
     let work_duration = time::Duration::from_millis(1000 * 60 * args.worktime as u64);
 
     let using_long_breaks = if args.number_of_short_breaks != 0 {
-        Some(args.number_of_short_breaks)
+        Some(args.number_of_short_breaks * 2)
     } else {
         None
     };
@@ -73,15 +85,7 @@ main!(|args: Cli, log_level: verbosity| {
             work_duration.as_secs() / 60, short_break_duration.as_secs() / 60, long_break_duration.as_secs() / 60);
 
     loop {
-        let text = match &state {
-            LongBreak => format!("{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
-            ShortBreak => format!("{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
-            Work => format!("{} {}", TITLE_MESSAGE, WORK_MESSAGE),
-            Initial => {
-                state = Work;
-                format!("{} {}", TITLE_MESSAGE, STARTUP_MESSAGE)
-            }
-        };
+        let text = format!("{}", &state);
         if cfg!(target_os = "windows") {
             Command::new("cmd")
                 .args(&["/C", &format!("notify-send {}", text)])
