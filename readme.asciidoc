@@ -16,11 +16,11 @@ To install (currently must be built from source):
 ----
 git clone https://github.com/syvsto/pomo.git && cd pomo/
 cargo build --release
+cargo install --force --path .
 ----
 
 == Running
-Copy the resulting executable (found in `./target/release/`) to somewhere on the system path,
-followed by `pomo` for default Pomodoro timings.
+Run `pomo` from anywhere, given that `~/.cargo/bin` is on the system path.
 
 *OR*
 
@@ -34,4 +34,5 @@ followed by `pomo` for default Pomodoro timings.
 
 *--longbreak, -l*: Set the time in minutes of the long breaks (defaults to 20)
 
-*--numbreaks, -n*: The number of short breaks before a long one. Set to 0 to disable long breaks (defaults to 4)
+*--numbreaks, -n*: The number of short breaks before a long one. Set to 0 to disable long breaks 
+(defaults to 4)
