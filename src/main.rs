@@ -11,6 +11,7 @@ const SHORTBREAK_MESSAGE: &'static str = "Break time!";
 const LONGBREAK_MESSAGE: &'static str = "Looooong Break time!";
 const WORK_MESSAGE: &'static str = "Work work!";
 const TITLE_MESSAGE: &'static str = "Pomo";
+const STARTUP_MESSAGE: &'static str = "Time to focus!";
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -72,6 +73,27 @@ main!(|args: Cli, log_level: verbosity| {
             work_duration.as_secs() / 60, short_break_duration.as_secs() / 60, long_break_duration.as_secs() / 60);
 
     loop {
+        let text = match &state {
+            LongBreak => format!("{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
+            ShortBreak => format!("{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
+            Work => format!("{} {}", TITLE_MESSAGE, WORK_MESSAGE),
+            Initial => {
+                state = Work;
+                format!("{} {}", TITLE_MESSAGE, STARTUP_MESSAGE)
+            }
+        };
+        if cfg!(target_os = "windows") {
+            Command::new("cmd")
+                .args(&["/C", &format!("notify-send {}", text)])
+                .output()
+                .expect(ERROR_MESSAGE);
+        } else {
+            Command::new("sh")
+                .args(&["-c", &format!("notify-send.exe {}", text)])
+                .output()
+                .expect(ERROR_MESSAGE);
+        }
+
         if using_long_breaks.is_some() && counter % using_long_breaks.unwrap() == 0 && state == Work
         {
             info!("Taking a long break");
@@ -85,24 +107,6 @@ main!(|args: Cli, log_level: verbosity| {
             info!("Working");
             state = Work;
             thread::sleep(work_duration);
-        }
-
-        let text = match &state {
-            LongBreak => format!("{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
-            ShortBreak => format!("{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
-            Work => format!("{} {}", TITLE_MESSAGE, WORK_MESSAGE),
-            Initial => unreachable!(),
-        };
-        if cfg!(target_os = "windows") {
-            Command::new("cmd")
-                .args(&["/C", &format!("notify-send {}", text)])
-                .output()
-                .expect(ERROR_MESSAGE);
-        } else {
-            Command::new("sh")
-                .args(&["-c", &format!("notify-send.exe {}", text)])
-                .output()
-                .expect(ERROR_MESSAGE);
         }
 
         counter += 1;
