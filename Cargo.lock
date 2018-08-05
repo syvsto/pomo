@@ -220,7 +220,7 @@ dependencies = [
 
 [[package]]
 name = "pomo"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "quicli 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

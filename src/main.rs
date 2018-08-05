@@ -74,17 +74,17 @@ main!(|args: Cli, log_level: verbosity| {
     loop {
         if using_long_breaks.is_some() && counter % using_long_breaks.unwrap() == 0 && state == Work
         {
+            info!("Taking a long break");
             state = LongBreak;
             thread::sleep(long_break_duration);
-            info!("Taking a long break");
         } else if state == Work {
+            info!("Taking a short break");
             state = ShortBreak;
             thread::sleep(short_break_duration);
-            info!("Taking a short break");
         } else {
+            info!("Working");
             state = Work;
             thread::sleep(work_duration);
-            info!("Working");
         }
 
         let text = match &state {
