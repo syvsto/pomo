@@ -66,7 +66,7 @@ main!(|args: Cli, log_level: verbosity| {
     } else {
         None
     };
-    let mut counter = 0;
+    let mut counter = 1;
     let mut state = Initial;
 
     println!("The clock is ticking! Using the following settings:\nWork time: {} mins\nShort breaks: {} mins\nLong breaks: {} mins\n",
