@@ -12,10 +12,9 @@ own.
 == Installation
 Pomo requires http://vaskovsky.net/notify-send/[notify-send] to be on the system path.
 
-To install (currently must be built from source):
+To (re)install (currently must be built from source):
 ----
 git clone https://github.com/syvsto/pomo.git && cd pomo/
-cargo build --release
 cargo install --force --path .
 ----
 
