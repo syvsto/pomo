@@ -11,7 +11,6 @@ const SHORTBREAK_MESSAGE: &'static str = "Break time!";
 const LONGBREAK_MESSAGE: &'static str = "Looooong Break time!";
 const WORK_MESSAGE: &'static str = "Work work!";
 const TITLE_MESSAGE: &'static str = "Pomo";
-const STARTUP_MESSAGE: &'static str = "Time to focus!";
 
 #[derive(Debug, StructOpt)]
 struct Cli {
@@ -62,7 +61,7 @@ impl fmt::Display for State {
 		ShortBreak => write!(f, "{} {}", TITLE_MESSAGE, SHORTBREAK_MESSAGE),
 		LongBreak => write!(f, "{} {}", TITLE_MESSAGE, LONGBREAK_MESSAGE),
 		Work => write!(f, "{} {}", TITLE_MESSAGE, WORK_MESSAGE),
-		Initial => write!(f, "{} {}", TITLE_MESSAGE, STARTUP_MESSAGE),
+		Initial => write!(f, "You should never see this. Please report it as a bug!"),
        }
    }
 }
@@ -90,7 +89,20 @@ main!(|args: Cli, log_level: verbosity| {
             work_duration.as_secs() / 60, short_break_duration.as_secs() / 60, long_break_duration.as_secs() / 60);
 
     loop {
+        if using_long_breaks.is_some() && counter % using_long_breaks.unwrap() == 0 && state == Work
+        {
+            info!("Taking a long break");
+            state = LongBreak;
+        } else if state == Work {
+            info!("Taking a short break");
+            state = ShortBreak;
+        } else {
+            info!("Working");
+            state = Work;
+        }
+        
         let text = format!("{}", &state);
+
         if cfg!(target_os = "windows") {
             Command::new("cmd")
                 .args(&["/C", &format!("notify-send {}", text)])
@@ -103,21 +115,13 @@ main!(|args: Cli, log_level: verbosity| {
                 .expect(ERROR_MESSAGE);
         }
 
-        if using_long_breaks.is_some() && counter % using_long_breaks.unwrap() == 0 && state == Work
-        {
-            info!("Taking a long break");
-            state = LongBreak;
-            thread::sleep(long_break_duration);
-        } else if state == Work {
-            info!("Taking a short break");
-            state = ShortBreak;
-            thread::sleep(short_break_duration);
-        } else {
-            info!("Working");
-            state = Work;
-            thread::sleep(work_duration);
-        }
-
+		match state {
+            LongBreak => thread::sleep(long_break_duration),
+            ShortBreak => thread::sleep(short_break_duration),
+            Work => thread::sleep(work_duration),
+            Initial => unreachable!(),
+		}
+		
         counter += 1;
     }
 });
